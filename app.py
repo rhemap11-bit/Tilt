@@ -15,9 +15,35 @@ if "selected_symptoms" not in st.session_state:
 if "selected_triggers" not in st.session_state:
     st.session_state.selected_triggers = []
 
-# --- CSS for fun fonts and pastel backgrounds ---
+# --- CSS for pastel colors and fun fonts ---
 st.markdown("""
 <style>
+/* Section background */
+.quicklog-section {
+    background-color: #FFF0F5;  /* pastel lavender */
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+/* Multiselect box */
+div[data-baseweb="select"] > div {
+    background-color: #FFE4E1 !important; /* pastel pink */
+    border-radius: 12px;
+}
+
+/* Text input / text area */
+input, textarea {
+    background-color: #F0FFF0 !important;  /* pastel mint green */
+    border-radius: 8px;
+}
+
+/* Slider track */
+.css-1f7k2ku .stSlider>div>div>div {
+    background-color: #F0F8FF !important;  /* pastel blue */
+}
+
+/* Headers */
 .section-header {
     font-family: 'Comic Neue', cursive;
     font-weight: bold;
@@ -27,30 +53,7 @@ st.markdown("""
 .subtext {
     font-family: 'Comic Neue', cursive;
     font-size: 16px;
-}
-.quicklog-section {
-    background-color: #FFF0F5;  /* pastel lavender */
-    padding: 12px;
-    border-radius: 12px;
-    margin-bottom: 16px;
-}
-.dailycheck-section {
-    background-color: #F0FFF0; /* pastel green */
-    padding: 12px;
-    border-radius: 12px;
-    margin-bottom: 16px;
-}
-.trends-section {
-    background-color: #F0F8FF; /* pastel blue */
-    padding: 12px;
-    border-radius: 12px;
-    margin-bottom: 16px;
-}
-.notes-section {
-    background-color: #FFF5F0; /* pastel pink */
-    padding: 12px;
-    border-radius: 12px;
-    margin-bottom: 16px;
+    padding-top: 6px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -87,6 +90,7 @@ selected_triggers = st.multiselect(
 )
 st.session_state.selected_triggers = [t.split(" ", 1)[1] for t in selected_triggers]
 
+# --- What Helped ---
 what_helped = st.text_area("What Helped?")
 
 # --- Save Quick Log ---
@@ -102,9 +106,10 @@ if st.button("Save Quick Log Entry"):
         "what_helped": what_helped
     }
     st.success("Quick Log saved!")
-    st.write(new_entry)  # replace with storage/database later
+    st.write(new_entry)  # replace with database/storage later
     st.session_state.selected_symptoms.clear()
     st.session_state.selected_triggers.clear()
 
 st.markdown('</div>', unsafe_allow_html=True)
+
 
