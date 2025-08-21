@@ -27,46 +27,6 @@ EXPANDER_COLORS = {
 
 SYMPTOM_COLORS = ["#ffd6e0", "#e5d4ff", "#d4eaff", "#fff3b0", "#d4ffea", "#ffd6e0", "#e5d4ff", "#d4eaff"]
 
-# --- Sidebar Accessibility ---
-st.sidebar.header("Accessibility Settings")
-large_text = st.sidebar.checkbox("Large Text Mode")
-high_contrast = st.sidebar.checkbox("High Contrast Mode")
-
-font_size = "22px" if large_text else "16px"
-bg_color = "#000000" if high_contrast else PASTEL_BG
-text_color = "#ffffff" if high_contrast else "#000000"
-
-st.markdown(f"""
-    <style>
-    body {{
-        background-color: {bg_color};
-        color: {text_color};
-        font-family: {FUN_FONT};
-        font-size: {font_size};
-    }}
-    h1, h2, h3 {{
-        font-family: {FUN_FONT};
-    }}
-    div.stButton > button {{
-        border-radius: 20px;
-        padding: 10px 20px;
-        margin: 5px;
-        font-size: {font_size};
-        color: #000000;
-    }}
-    div.stCheckbox > label {{
-        border-radius: 15px;
-        padding: 8px 12px;
-        margin: 4px;
-        background-color: #ffd6e0;
-        color: #000000;
-    }}
-    textarea, input, select {{
-        font-size: {font_size};
-    }}
-    </style>
-""", unsafe_allow_html=True)
-
 # --- Load Logs ---
 if LOG_FILE.exists():
     with open(LOG_FILE, "r") as f:
