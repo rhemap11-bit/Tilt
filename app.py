@@ -1,140 +1,104 @@
 import streamlit as st
-import pandas as pd
-import json
 from datetime import datetime
-from pathlib import Path
-from io import BytesIO
-from matplotlib.backends.backend_pdf import PdfPages
-import matplotlib.pyplot as plt
-import os
 
-# --- Setup ---
-LOG_FILE = Path("logs.json")
-UPLOAD_DIR = Path("uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
-
-# --- Palette & Fonts ---
-HEADER_FONT = "'Fredoka One', cursive"
-BODY_FONT = "'Quicksand', sans-serif"
-SECTION_COLORS = {
-    "Quick Log": "#FFD6E0",
-    "Daily Checklist": "#D4FFEA",
-    "Trends": "#D4EAFF",
-    "Notes": "#FFF3B0",
-    "Doctor Export": "#E5D4FF"
-}
-SYMPTOM_COLORS = ["#FFB3C6","#B0E0FF","#FFD6A5","#D4FFEA","#D4EAFF","#FFF3B0","#FFD6E0","#E5D4FF"]
-
+# --- Sample data ---
 SYMPTOMS = ["Dizziness","Heart Palpitations","Fatigue","Nausea",
             "Brain Fog","Headache","Sweating","Tremors"]
 TRIGGERS = ["Standing long","Heat","Stress","Lack of sleep","Dehydration","Salt restriction"]
+SYMPTOM_COLORS = ["#FFD6E0","#E5D4FF","#D4EAFF","#FFF3B0","#D4FFEA","#FFB3C6","#B0E0FF","#FFD6A5"]
 
-# --- Accessibility ---
-st.sidebar.header("Accessibility Settings")
-large_text = st.sidebar.checkbox("Large Text Mode")
-high_contrast = st.sidebar.checkbox("High Contrast Mode")
-font_size = "20px" if large_text else "16px"
-bg_color = "#FFFFFF" if not high_contrast else "#000000"
-text_color = "#000000" if not high_contrast else "#FFFFFF"
+# --- Initialize session state ---
+if "selected_symptoms" not in st.session_state:
+    st.session_state.selected_symptoms = []
 
-# --- Global Styles ---
-st.markdown(f"""
-<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@400;500&display=swap" rel="stylesheet">
+if "selected_triggers" not in st.session_state:
+    st.session_state.selected_triggers = []
+
+# --- Quick Log Section ---
+st.markdown("""
 <style>
-body, h1, h2, h3, label, div {{
-    font-family: {BODY_FONT};
-    font-size: {font_size};
-    color: {text_color};
-    background-color: {bg_color};
-}}
-.section-header {{
-    font-family: {HEADER_FONT};
-    font-weight: 700;
-    font-size: 28px;
-    margin-bottom:5px;
-}}
-.pill {{
+.pill {
     display:inline-block;
     border-radius:20px;
     padding:8px 16px;
     margin:4px;
     cursor:pointer;
     font-weight:500;
-    color:#000000;
-}}
-.section-box {{
-    padding: 15px;
-    border-radius: 12px;
-    margin-bottom: 15px;
-}}
+    user-select:none;
+}
 </style>
 """, unsafe_allow_html=True)
 
-# --- Load Logs ---
-if LOG_FILE.exists():
-    with open(LOG_FILE, "r") as f:
-        logs = json.load(f)
-else:
-    logs = []
+st.subheader("Quick Log")
 
-st.set_page_config(page_title="Tilt: POTS Tracker", layout="centered")
-st.markdown(f"<h1 style='text-align:center; color:#FF6F91; font-family:{HEADER_FONT}'>Tilt: POTS Tracker</h1>", unsafe_allow_html=True)
+timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+posture = st.selectbox("Posture", ["Sitting", "Standing", "Lying"])
+heart_rate = st.number_input("Heart Rate", 40, 200, 70)
+blood_pressure = st.text_input("Blood Pressure (optional)")
+severity = st.slider("Severity (1-10)", 1, 10, 5)
 
-# --- Helper ---
-def save_logs():
-    with open(LOG_FILE, "w") as f:
-        json.dump(logs, f, indent=2)
+# --- Symptoms as toggleable pills ---
+st.markdown("**Symptoms:**")
+for i, symptom in enumerate(SYMPTOMS):
+    color = SYMPTOM_COLORS[i % len(SYMPTOM_COLORS)]
+    if symptom in st.session_state.selected_symptoms:
+        color = "#8B5CF6"  # darker when selected
+    pill_html = f"""
+    <span class='pill' style='background-color:{color}' 
+        onclick="document.getElementById('{symptom}').click()">{symptom}</span>
+    <input type="checkbox" id="{symptom}" style="display:none;" 
+        {'checked' if symptom in st.session_state.selected_symptoms else ''}>
+    """
+    clicked = st.markdown(pill_html, unsafe_allow_html=True)
+    # Using st.checkbox hidden to store state
+    if st.checkbox("", key=f"hidden_symptom_{i}", value=(symptom in st.session_state.selected_symptoms)):
+        if symptom not in st.session_state.selected_symptoms:
+            st.session_state.selected_symptoms.append(symptom)
+    else:
+        if symptom in st.session_state.selected_symptoms:
+            st.session_state.selected_symptoms.remove(symptom)
 
-# --- Quick Log ---
-with st.expander("Quick Log", expanded=True):
-    st.markdown(f"<div class='section-box' style='background-color:{SECTION_COLORS['Quick Log']};'></div>", unsafe_allow_html=True)
-    st.subheader("Quick Log")
-    
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
-    posture = st.selectbox("Posture", ["Sitting", "Standing", "Lying"])
-    heart_rate = st.number_input("Heart Rate", 40, 200, 70)
-    blood_pressure = st.text_input("Blood Pressure (optional)")
-    severity = st.slider("Severity (1-10)", 1, 10, 5)
+other_symptoms = st.text_input("Other Symptoms (optional)")
+if other_symptoms and other_symptoms not in st.session_state.selected_symptoms:
+    st.session_state.selected_symptoms.append(other_symptoms)
 
-    # --- Symptoms as clickable pills ---
-    st.subheader("Symptoms")
-    if "selected_symptoms" not in st.session_state:
-        st.session_state.selected_symptoms = []
+# --- Triggers as toggleable pills ---
+st.markdown("**Possible Triggers:**")
+for i, trigger in enumerate(TRIGGERS):
+    color = "#B0E0FF"  # pastel default
+    if trigger in st.session_state.selected_triggers:
+        color = "#1D4ED8"  # darker when selected
+    pill_html = f"""
+    <span class='pill' style='background-color:{color}' 
+        onclick="document.getElementById('trig_{i}').click()">{trigger}</span>
+    <input type="checkbox" id="trig_{i}" style="display:none;" 
+        {'checked' if trigger in st.session_state.selected_triggers else ''}>
+    """
+    clicked = st.markdown(pill_html, unsafe_allow_html=True)
+    if st.checkbox("", key=f"hidden_trigger_{i}", value=(trigger in st.session_state.selected_triggers)):
+        if trigger not in st.session_state.selected_triggers:
+            st.session_state.selected_triggers.append(trigger)
+    else:
+        if trigger in st.session_state.selected_triggers:
+            st.session_state.selected_triggers.remove(trigger)
 
-    sym_cols = st.columns(4)
-    for i, symptom in enumerate(SYMPTOMS):
-        col = sym_cols[i % 4]
-        selected = symptom in st.session_state.selected_symptoms
-        color = SYMPTOM_COLORS[i % len(SYMPTOM_COLORS)] if selected else "#F0F0F0"
-        if col.button(symptom, key=f"symptom_btn_{i}"):
-            if selected:
-                st.session_state.selected_symptoms.remove(symptom)
-            else:
-                st.session_state.selected_symptoms.append(symptom)
-        col.markdown(f"<span class='pill' style='background-color:{color}'>{symptom}</span>", unsafe_allow_html=True)
+what_helped = st.text_area("What Helped?")
 
-    other_symptoms = st.text_input("Other Symptoms (optional)")
-    if other_symptoms and other_symptoms not in st.session_state.selected_symptoms:
-        st.session_state.selected_symptoms.append(other_symptoms)
-
-    # --- Triggers as clickable pills ---
-    st.subheader("Possible Triggers")
-    if "selected_triggers" not in st.session_state:
-        st.session_state.selected_triggers = []
-
-    trig_cols = st.columns(3)
-    for i, trigger in enumerate(TRIGGERS):
-        col = trig_cols[i % 3]
-        selected = trigger in st.session_state.selected_triggers
-        color = "#B0E0FF" if selected else "#F0F0F0"
-        if col.button(trigger, key=f"trigger_btn_{i}"):
-            if selected:
-                st.session_state.selected_triggers.remove(trigger)
-            else:
-                st.session_state.selected_triggers.append(trigger)
-        col.markdown(f"<span class='pill' style='background-color:{color}'>{trigger}</span>", unsafe_allow_html=True)
-
-    what_helped = st.text_area("What Helped?")
+# --- Quick Log Save Button ---
+if st.button("Save Quick Log Entry"):
+    new_entry = {
+        "timestamp": timestamp,
+        "posture": posture,
+        "heart_rate": heart_rate,
+        "blood_pressure": blood_pressure,
+        "severity": severity,
+        "symptoms": st.session_state.selected_symptoms.copy(),
+        "triggers": st.session_state.selected_triggers.copy(),
+        "what_helped": what_helped
+    }
+    st.success("Quick Log saved!")
+    st.session_state.selected_symptoms.clear()
+    st.session_state.selected_triggers.clear()
 
 # --- Daily Checklist ---
 with st.expander("Daily Checklist"):
