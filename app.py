@@ -15,46 +15,26 @@ if "selected_symptoms" not in st.session_state:
 if "selected_triggers" not in st.session_state:
     st.session_state.selected_triggers = []
 
-# --- CSS for pastel colors and fun fonts ---
+# --- CSS for pastel theme and fonts ---
 st.markdown("""
 <style>
-/* Section background */
-.quicklog-section {
-    background-color: #FFF0F5;  /* pastel lavender */
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-}
+/* Section background colors */
+.quicklog-section { background-color: #F8E1F4; padding: 16px; border-radius: 12px; margin-bottom: 16px; }
+.dailycheck-section { background-color: #E1F0F8; padding: 16px; border-radius: 12px; margin-bottom: 16px; }
+.trends-section { background-color: #E8E1F8; padding: 16px; border-radius: 12px; margin-bottom: 16px; }
 
-/* Multiselect box */
-div[data-baseweb="select"] > div {
-    background-color: #FFE4E1 !important; /* pastel pink */
-    border-radius: 12px;
-}
+/* Multiselect pastel background */
+div[data-baseweb="select"] > div { background-color: #FDE1F8 !important; border-radius: 12px; }
 
-/* Text input / text area */
-input, textarea {
-    background-color: #F0FFF0 !important;  /* pastel mint green */
-    border-radius: 8px;
-}
+/* Text input / text area pastel background */
+input, textarea { background-color: #E1F0F8 !important; border-radius: 8px; color: black; }
 
-/* Slider track */
-.css-1f7k2ku .stSlider>div>div>div {
-    background-color: #F0F8FF !important;  /* pastel blue */
-}
+/* Slider track pastel */
+.css-1f7k2ku .stSlider>div>div>div { background-color: #E8E1F8 !important; }
 
 /* Headers */
-.section-header {
-    font-family: 'Comic Neue', cursive;
-    font-weight: bold;
-    font-size: 24px;
-    padding: 8px;
-}
-.subtext {
-    font-family: 'Comic Neue', cursive;
-    font-size: 16px;
-    padding-top: 6px;
-}
+.section-header { font-family: 'Comic Neue', cursive; font-weight: bold; font-size: 24px; color: black; padding: 8px; }
+.subtext { font-family: 'Comic Neue', cursive; font-size: 16px; color: black; margin-bottom: 4px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -71,10 +51,7 @@ severity = st.slider("Severity (1-10)", 1, 10, 5)
 # --- Symptoms ---
 st.markdown('<div class="subtext">Symptoms:</div>', unsafe_allow_html=True)
 symptoms_display = [f"{SYMPTOM_EMOJIS[i]} {symptom}" for i, symptom in enumerate(SYMPTOMS)]
-selected_symptoms = st.multiselect(
-    "Select symptoms",
-    options=symptoms_display
-)
+selected_symptoms = st.multiselect("Select symptoms", options=symptoms_display)
 st.session_state.selected_symptoms = [s.split(" ", 1)[1] for s in selected_symptoms]
 
 other_symptoms = st.text_input("Other Symptoms (optional)")
@@ -84,13 +61,9 @@ if other_symptoms:
 # --- Triggers ---
 st.markdown('<div class="subtext">Possible Triggers:</div>', unsafe_allow_html=True)
 triggers_display = [f"{TRIGGER_EMOJIS[i]} {trigger}" for i, trigger in enumerate(TRIGGERS)]
-selected_triggers = st.multiselect(
-    "Select triggers",
-    options=triggers_display
-)
+selected_triggers = st.multiselect("Select triggers", options=triggers_display)
 st.session_state.selected_triggers = [t.split(" ", 1)[1] for t in selected_triggers]
 
-# --- What Helped ---
 what_helped = st.text_area("What Helped?")
 
 # --- Save Quick Log ---
@@ -106,9 +79,12 @@ if st.button("Save Quick Log Entry"):
         "what_helped": what_helped
     }
     st.success("Quick Log saved!")
-    st.write(new_entry)  # replace with database/storage later
+    st.write(new_entry)  # replace with storage later
     st.session_state.selected_symptoms.clear()
     st.session_state.selected_triggers.clear()
+
+st.markdown('</div>', unsafe_allow_html=True)
+
 
 st.markdown('</div>', unsafe_allow_html=True)
 
