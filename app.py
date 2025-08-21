@@ -5,6 +5,7 @@ from datetime import datetime
 SYMPTOMS = ["Dizziness","Heart Palpitations","Fatigue","Nausea",
             "Brain Fog","Headache","Sweating","Tremors"]
 SYMPTOM_EMOJIS = ["🌀","❤️‍🔥","😴","🤢","🧠💭","🤕","💦","🤲"]
+
 TRIGGERS = ["Standing long","Heat","Stress","Lack of sleep","Dehydration","Salt restriction"]
 TRIGGER_EMOJIS = ["🧍","🌞","😰","🛌","💧","🧂❌"]
 
@@ -14,28 +15,96 @@ if "selected_symptoms" not in st.session_state:
 if "selected_triggers" not in st.session_state:
     st.session_state.selected_triggers = []
 
-# --- Symptoms Multiselect ---
-st.markdown("**Symptoms:**")
-symptoms_display = [f"{SYMPTOM_EMOJIS[i]} {symptom}" for i, symptom in enumerate(SYMPTOMS)]
+# --- CSS for fun fonts and pastel backgrounds ---
+st.markdown("""
+<style>
+.section-header {
+    font-family: 'Comic Neue', cursive;
+    font-weight: bold;
+    font-size: 24px;
+    padding: 8px;
+}
+.subtext {
+    font-family: 'Comic Neue', cursive;
+    font-size: 16px;
+}
+.quicklog-section {
+    background-color: #FFF0F5;  /* pastel lavender */
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+.dailycheck-section {
+    background-color: #F0FFF0; /* pastel green */
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+.trends-section {
+    background-color: #F0F8FF; /* pastel blue */
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+.notes-section {
+    background-color: #FFF5F0; /* pastel pink */
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+</style>
+""", unsafe_allow_html=True)
 
-# Multiselect — no default needed here
+# --- Quick Log Section ---
+st.markdown('<div class="quicklog-section">', unsafe_allow_html=True)
+st.markdown('<div class="section-header">Quick Log</div>', unsafe_allow_html=True)
+
+timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+posture = st.selectbox("Posture", ["Sitting", "Standing", "Lying"])
+heart_rate = st.number_input("Heart Rate", 40, 200, 70)
+blood_pressure = st.text_input("Blood Pressure (optional)")
+severity = st.slider("Severity (1-10)", 1, 10, 5)
+
+# --- Symptoms ---
+st.markdown('<div class="subtext">Symptoms:</div>', unsafe_allow_html=True)
+symptoms_display = [f"{SYMPTOM_EMOJIS[i]} {symptom}" for i, symptom in enumerate(SYMPTOMS)]
 selected_symptoms = st.multiselect(
     "Select symptoms",
     options=symptoms_display
 )
-
-# Save clean symptom names without emojis
 st.session_state.selected_symptoms = [s.split(" ", 1)[1] for s in selected_symptoms]
 
 other_symptoms = st.text_input("Other Symptoms (optional)")
 if other_symptoms:
     st.session_state.selected_symptoms.append(other_symptoms)
 
-# --- Triggers Multiselect ---
-st.markdown("**Possible Triggers:**")
+# --- Triggers ---
+st.markdown('<div class="subtext">Possible Triggers:</div>', unsafe_allow_html=True)
 triggers_display = [f"{TRIGGER_EMOJIS[i]} {trigger}" for i, trigger in enumerate(TRIGGERS)]
 selected_triggers = st.multiselect(
     "Select triggers",
     options=triggers_display
 )
 st.session_state.selected_triggers = [t.split(" ", 1)[1] for t in selected_triggers]
+
+what_helped = st.text_area("What Helped?")
+
+# --- Save Quick Log ---
+if st.button("Save Quick Log Entry"):
+    new_entry = {
+        "timestamp": timestamp,
+        "posture": posture,
+        "heart_rate": heart_rate,
+        "blood_pressure": blood_pressure,
+        "severity": severity,
+        "symptoms": st.session_state.selected_symptoms.copy(),
+        "triggers": st.session_state.selected_triggers.copy(),
+        "what_helped": what_helped
+    }
+    st.success("Quick Log saved!")
+    st.write(new_entry)  # replace with storage/database later
+    st.session_state.selected_symptoms.clear()
+    st.session_state.selected_triggers.clear()
+
+st.markdown('</div>', unsafe_allow_html=True)
+
