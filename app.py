@@ -51,37 +51,48 @@ with st.expander("Quick Log", expanded=True):
     salt_intake = st.number_input("Salt Intake (g)", min_value=0, max_value=50, value=1)
     severity = st.slider("Severity (1-10)", 1, 10, 5)
 
-    # --- Symptoms with clickable pastel buttons ---
-    st.subheader("Select Symptoms")
-    common_symptoms = [
-        "Dizziness", "Heart Palpitations", "Fatigue", "Nausea",
-        "Brain Fog", "Headache", "Sweating", "Tremors"
-    ]
-    selected_symptoms = []
+   import streamlit as st
 
-    # Apply pastel button style
-    st.markdown("""
-    <style>
-    div.stCheckbox > label {
-        background-color: #ffd6e0;  /* pastel pink */
-        border-radius: 12px;
-        padding: 5px 10px;
-        margin: 3px;
-        display: inline-block;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+st.subheader("Select Symptoms")
 
-    cols = st.columns(4)
-    for i, symptom in enumerate(common_symptoms):
-        with cols[i % 4]:
-            if st.checkbox(symptom):
-                selected_symptoms.append(symptom)
+# Common POTS symptoms
+common_symptoms = [
+    "Dizziness", "Heart Palpitations", "Fatigue", "Nausea",
+    "Brain Fog", "Headache", "Sweating", "Tremors"
+]
 
-    # Optionally add "Other" symptoms
-    other_symptoms = st.text_input("Other Symptoms (optional)")
-    if other_symptoms:
-        selected_symptoms.append(other_symptoms)
+# Pastel colors for each symptom
+colors = ["#ffd6e0", "#e5d4ff", "#d4eaff", "#fff3b0", "#ffd6e0", "#e5d4ff", "#d4eaff", "#fff3b0"]
+
+# Initialize session state for selected symptoms
+if "selected_symptoms" not in st.session_state:
+    st.session_state.selected_symptoms = []
+
+# Display symptoms as toggle buttons
+cols = st.columns(4)
+for i, symptom in enumerate(common_symptoms):
+    color = colors[i % len(colors)]
+    selected = symptom in st.session_state.selected_symptoms
+
+    if cols[i % 4].button(
+        symptom,
+        key=f"symptom_{i}",
+        help="Click to toggle symptom",
+    ):
+        if selected:
+            st.session_state.selected_symptoms.remove(symptom)
+        else:
+            st.session_state.selected_symptoms.append(symptom)
+
+# Display selected symptoms visually
+if st.session_state.selected_symptoms:
+    st.markdown("**Selected Symptoms:** " + ", ".join(st.session_state.selected_symptoms))
+
+# Optional "Other" symptoms
+other_symptoms = st.text_input("Other Symptoms (optional)")
+if other_symptoms and other_symptoms not in st.session_state.selected_symptoms:
+    st.session_state.selected_symptoms.append(other_symptoms)
+
 
     # What helped
     what_helped = st.text_area("What Helped?")
