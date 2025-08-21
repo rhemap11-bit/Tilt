@@ -14,7 +14,7 @@ UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
 # --- Palette & Fonts ---
-FUN_FONT = "Comic Sans MS, cursive, sans-serif"
+FUN_FONT = "Cavolini, cursive, sans-serif"
 ACCENT_COLORS = {
     "Quick Log": "#FFD6E0",
     "Daily Checklist": "#D4FFEA",
