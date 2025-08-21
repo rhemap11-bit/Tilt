@@ -51,7 +51,7 @@ with st.expander("Quick Log", expanded=True):
     salt_intake = st.number_input("Salt Intake (g)", min_value=0, max_value=50, value=1)
     severity = st.slider("Severity (1-10)", 1, 10, 5)
 
- import streamlit as st
+import streamlit as st
 
 st.subheader("Select Symptoms")
 
