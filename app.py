@@ -223,5 +223,14 @@ if st.button("Add Quick Log Entry", key="final_log_btn"):
         "heart_rate": heart_rate,
         "blood_pressure": blood_pressure,
         "severity": severity,
-        "symptoms": st.session_state.select_
+        "symptoms": st.session_state.selected_symptoms.copy(),
+        "triggers": st.session_state.selected_triggers.copy(),
+        "what_helped": what_helped
+    }
+    logs.append(new_entry)
+    save_logs()
+    st.success("Quick Log added!")
+    st.session_state.selected_symptoms.clear()
+    st.session_state.selected_triggers.clear()
+
 
