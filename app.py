@@ -15,8 +15,8 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 
 # --- Palette & Fonts ---
 FUN_FONT = "Comic Sans MS, cursive, sans-serif"
-APP_BG = "#f9f5ff"          # pastel lilac background
-SIDEBAR_BG = "#e5d4ff"      # pastel purple
+APP_BG = "#f9f5ff"
+SIDEBAR_BG = "#e5d4ff"
 EXPANDER_COLORS = {
     "Quick Log": "#fff3b0",
     "Daily Checklist": "#d4ffea",
@@ -66,8 +66,24 @@ textarea, input, select {{
     font-size: {font_size};
 }}
 .stExpander {{
+    background-color: transparent !important;
+    border:none;
+    padding:0px;
+}}
+.section-header {{
+    font-family: {FUN_FONT};
+    font-weight: 700;
+    font-size: 24px;
+    margin-bottom:5px;
+}}
+.section-content {{
     border-radius:15px;
-    padding:10px;
+    padding:15px;
+}}
+.small-text {{
+    font-family: {FUN_FONT};
+    font-weight: 400;
+    font-size:16px;
 }}
 </style>
 """, unsafe_allow_html=True)
@@ -90,7 +106,8 @@ def save_logs():
 
 # --- Quick Log ---
 with st.expander("Quick Log", expanded=True):
-    st.markdown(f"<div style='background-color:{EXPANDER_COLORS['Quick Log']}; border-radius:15px; padding:15px;'>", unsafe_allow_html=True)
+    st.markdown("<div class='section-header'>Quick Log</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='section-content' style='background-color:{EXPANDER_COLORS['Quick Log']}'>", unsafe_allow_html=True)
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
     posture = st.selectbox("Posture", ["Sitting", "Standing", "Lying"])
     heart_rate = st.number_input("Heart Rate", min_value=40, max_value=200, value=70)
@@ -99,25 +116,23 @@ with st.expander("Quick Log", expanded=True):
     salt_intake = st.number_input("Salt Intake (g)", min_value=0, max_value=50, value=1)
     severity = st.slider("Severity (1-10)", 1, 10, 5)
 
-    # --- Symptoms Inline Buttons ---
+    # --- Inline Symptom Buttons ---
     st.subheader("Select Symptoms")
     common_symptoms = ["Dizziness","Heart Palpitations","Fatigue","Nausea",
                        "Brain Fog","Headache","Sweating","Tremors"]
     if "selected_symptoms" not in st.session_state:
         st.session_state.selected_symptoms = []
 
+    cols = st.columns(4)
     for i, symptom in enumerate(common_symptoms):
         selected = symptom in st.session_state.selected_symptoms
-        border = "3px solid #000" if selected else "1px solid #000"
         color = SYMPTOM_COLORS[i % len(SYMPTOM_COLORS)]
-        st.markdown(f"""
-        <div style='display:inline-block; background-color:{color}; border:{border};
-                    border-radius:20px; padding:8px 12px; margin:3px; cursor:pointer; text-align:center;'>
-            <form method="post">
-                <input type="submit" name="{symptom}" value="{symptom}" style="background:none; border:none; font-size:{font_size}; cursor:pointer;">
-            </form>
-        </div>
-        """, unsafe_allow_html=True)
+        label = f"✔ {symptom}" if selected else symptom
+        if cols[i % 4].button(label, key=f"symptom_{i}"):
+            if selected:
+                st.session_state.selected_symptoms.remove(symptom)
+            else:
+                st.session_state.selected_symptoms.append(symptom)
 
     other_symptoms = st.text_input("Other Symptoms (optional)")
     if other_symptoms and other_symptoms not in st.session_state.selected_symptoms:
@@ -145,7 +160,8 @@ with st.expander("Quick Log", expanded=True):
 
 # --- Daily Checklist ---
 with st.expander("Daily Checklist"):
-    st.markdown(f"<div style='background-color:{EXPANDER_COLORS['Daily Checklist']}; border-radius:15px; padding:15px;'>", unsafe_allow_html=True)
+    st.markdown("<div class='section-header'>Daily Checklist</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='section-content' style='background-color:{EXPANDER_COLORS['Daily Checklist']}'>", unsafe_allow_html=True)
     meds = st.checkbox("Medications taken")
     water_goal = st.checkbox("Water goal met")
     compression_wear = st.checkbox("Compression wear")
@@ -166,7 +182,8 @@ with st.expander("Daily Checklist"):
 
 # --- Trends ---
 with st.expander("Trends"):
-    st.markdown(f"<div style='background-color:{EXPANDER_COLORS['Trends']}; border-radius:15px; padding:15px;'>", unsafe_allow_html=True)
+    st.markdown("<div class='section-header'>Trends</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='section-content' style='background-color:{EXPANDER_COLORS['Trends']}'>", unsafe_allow_html=True)
     if logs:
         df = pd.DataFrame(logs)
         trend_cols = ["heart_rate","hydration","severity"]
@@ -183,7 +200,8 @@ with st.expander("Trends"):
 
 # --- Notes ---
 with st.expander("Notes"):
-    st.markdown(f"<div style='background-color:{EXPANDER_COLORS['Notes']}; border-radius:15px; padding:15px;'>", unsafe_allow_html=True)
+    st.markdown("<div class='section-header'>Notes</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='section-content' style='background-color:{EXPANDER_COLORS['Notes']}'>", unsafe_allow_html=True)
     note_text = st.text_area("Add a note")
     uploaded_file = st.file_uploader("Attach photo (optional)", type=["png","jpg","jpeg"])
 
@@ -201,7 +219,8 @@ with st.expander("Notes"):
 
 # --- Doctor Export ---
 with st.expander("Doctor Export"):
-    st.markdown(f"<div style='background-color:{EXPANDER_COLORS['Doctor Export']}; border-radius:15px; padding:15px;'>", unsafe_allow_html=True)
+    st.markdown("<div class='section-header'>Doctor Export</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='section-content' style='background-color:{EXPANDER_COLORS['Doctor Export']}'>", unsafe_allow_html=True)
     start_date = st.date_input("Start Date")
     end_date = st.date_input("End Date")
 
