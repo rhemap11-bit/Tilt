@@ -15,23 +15,27 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 
 # --- Palette & Fonts ---
 FUN_FONT = "Comic Sans MS, cursive, sans-serif"
-APP_BG = "#f9f5ff"
-SIDEBAR_BG = "#e5d4ff"
-EXPANDER_COLORS = {
-    "Quick Log": "#fff3b0",
-    "Daily Checklist": "#d4ffea",
-    "Trends": "#d4eaff",
-    "Notes": "#ffd6e0",
-    "Doctor Export": "#e5d4ff"
+ACCENT_COLORS = {
+    "Quick Log": "#FFD6E0",
+    "Daily Checklist": "#D4FFEA",
+    "Trends": "#D4EAFF",
+    "Notes": "#FFF3B0",
+    "Doctor Export": "#E5D4FF",
+    "Symptoms": "#FFD6E0",
+    "Triggers": "#E5D4FF"
 }
-SYMPTOM_COLORS = ["#ffd6e0","#e5d4ff","#d4eaff","#fff3b0","#d4ffea","#ffd6e0","#e5d4ff","#d4eaff"]
+
+SYMPTOMS = ["Dizziness","Heart Palpitations","Fatigue","Nausea",
+            "Brain Fog","Headache","Sweating","Tremors"]
+
+TRIGGERS = ["Standing for long periods","Heat exposure","Stress","Lack of sleep","Dehydration","Salt restriction"]
 
 # --- Accessibility ---
 st.sidebar.header("Accessibility Settings")
 large_text = st.sidebar.checkbox("Large Text Mode")
 high_contrast = st.sidebar.checkbox("High Contrast Mode")
-font_size = "22px" if large_text else "16px"
-bg_color = "#000000" if high_contrast else APP_BG
+font_size = "20px" if large_text else "16px"
+bg_color = "#000000" if high_contrast else "#F9F5FF"
 text_color = "#ffffff" if high_contrast else "#000000"
 
 # --- Global Styles ---
@@ -46,42 +50,14 @@ body, h1, h2, h3, label, div {{
     background-color: {bg_color};
 }}
 .sidebar .sidebar-content {{
-    background-color: {SIDEBAR_BG};
-}}
-div.stButton > button {{
-    border-radius: 20px;
-    padding: 10px 20px;
-    margin: 5px;
-    font-size: {font_size};
-    color: #000000;
-}}
-div.stCheckbox > label {{
-    border-radius: 15px;
-    padding: 8px 12px;
-    margin: 4px;
-    background-color: #ffd6e0;
-    color: #000000;
-}}
-textarea, input, select {{
-    font-size: {font_size};
-}}
-.stExpander {{
-    background-color: transparent !important;
-    border:none;
-    padding:0px;
+    background-color: #E5D4FF;
 }}
 .section-header {{
-    font-family: {FUN_FONT};
     font-weight: 700;
     font-size: 24px;
     margin-bottom:5px;
 }}
-.section-content {{
-    border-radius:15px;
-    padding:15px;
-}}
 .small-text {{
-    font-family: {FUN_FONT};
     font-weight: 400;
     font-size:16px;
 }}
@@ -97,7 +73,7 @@ else:
 
 # --- Page Config ---
 st.set_page_config(page_title="Tilt: POTS Tracker", layout="centered")
-st.markdown(f"<h1 style='text-align:center; color:#e5d4ff'>Tilt: POTS Tracker</h1>", unsafe_allow_html=True)
+st.markdown(f"<h1 style='text-align:center; color:#E5D4FF'>Tilt: POTS Tracker</h1>", unsafe_allow_html=True)
 
 # --- Helper: Save Logs ---
 def save_logs():
@@ -106,8 +82,9 @@ def save_logs():
 
 # --- Quick Log ---
 with st.expander("Quick Log", expanded=True):
-    st.markdown("<div class='section-header'>Quick Log</div>", unsafe_allow_html=True)
-    st.markdown(f"<div class='section-content' style='background-color:{EXPANDER_COLORS['Quick Log']}'>", unsafe_allow_html=True)
+    st.markdown(f"<div style='height:8px; background-color:{ACCENT_COLORS['Quick Log']}; border-radius:4px;'></div>", unsafe_allow_html=True)
+    st.subheader("Quick Log")
+    
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
     posture = st.selectbox("Posture", ["Sitting", "Standing", "Lying"])
     heart_rate = st.number_input("Heart Rate", min_value=40, max_value=200, value=70)
@@ -116,27 +93,40 @@ with st.expander("Quick Log", expanded=True):
     salt_intake = st.number_input("Salt Intake (g)", min_value=0, max_value=50, value=1)
     severity = st.slider("Severity (1-10)", 1, 10, 5)
 
-    # --- Inline Symptom Buttons ---
+    # --- Symptoms Inline Checkboxes ---
+    st.markdown(f"<div style='height:8px; background-color:{ACCENT_COLORS['Symptoms']}; border-radius:4px;'></div>", unsafe_allow_html=True)
     st.subheader("Select Symptoms")
-    common_symptoms = ["Dizziness","Heart Palpitations","Fatigue","Nausea",
-                       "Brain Fog","Headache","Sweating","Tremors"]
     if "selected_symptoms" not in st.session_state:
         st.session_state.selected_symptoms = []
 
     cols = st.columns(4)
-    for i, symptom in enumerate(common_symptoms):
+    for i, symptom in enumerate(SYMPTOMS):
         selected = symptom in st.session_state.selected_symptoms
-        color = SYMPTOM_COLORS[i % len(SYMPTOM_COLORS)]
-        label = f"✔ {symptom}" if selected else symptom
-        if cols[i % 4].button(label, key=f"symptom_{i}"):
+        label = f"✅ {symptom}" if selected else f"🔹 {symptom}"
+        if cols[i % 4].checkbox(label, key=f"symptom_{i}"):
+            if not selected:
+                st.session_state.selected_symptoms.append(symptom)
+        else:
             if selected:
                 st.session_state.selected_symptoms.remove(symptom)
-            else:
-                st.session_state.selected_symptoms.append(symptom)
 
     other_symptoms = st.text_input("Other Symptoms (optional)")
     if other_symptoms and other_symptoms not in st.session_state.selected_symptoms:
         st.session_state.selected_symptoms.append(other_symptoms)
+
+    # --- Possible Triggers ---
+    st.markdown(f"<div style='height:8px; background-color:{ACCENT_COLORS['Triggers']}; border-radius:4px;'></div>", unsafe_allow_html=True)
+    st.subheader("Possible Triggers")
+    if "selected_triggers" not in st.session_state:
+        st.session_state.selected_triggers = []
+    for trigger in TRIGGERS:
+        checked = st.checkbox(trigger, value=trigger in st.session_state.selected_triggers)
+        if checked:
+            if trigger not in st.session_state.selected_triggers:
+                st.session_state.selected_triggers.append(trigger)
+        else:
+            if trigger in st.session_state.selected_triggers:
+                st.session_state.selected_triggers.remove(trigger)
 
     what_helped = st.text_area("What Helped?")
 
@@ -150,18 +140,19 @@ with st.expander("Quick Log", expanded=True):
             "salt_intake": salt_intake,
             "severity": severity,
             "symptoms": st.session_state.selected_symptoms.copy(),
+            "triggers": st.session_state.selected_triggers.copy(),
             "what_helped": what_helped
         }
         logs.append(new_entry)
         save_logs()
         st.success("Log added!")
         st.session_state.selected_symptoms.clear()
-    st.markdown("</div>", unsafe_allow_html=True)
+        st.session_state.selected_triggers.clear()
 
 # --- Daily Checklist ---
 with st.expander("Daily Checklist"):
-    st.markdown("<div class='section-header'>Daily Checklist</div>", unsafe_allow_html=True)
-    st.markdown(f"<div class='section-content' style='background-color:{EXPANDER_COLORS['Daily Checklist']}'>", unsafe_allow_html=True)
+    st.markdown(f"<div style='height:8px; background-color:{ACCENT_COLORS['Daily Checklist']}; border-radius:4px;'></div>", unsafe_allow_html=True)
+    st.subheader("Daily Checklist")
     meds = st.checkbox("Medications taken")
     water_goal = st.checkbox("Water goal met")
     compression_wear = st.checkbox("Compression wear")
@@ -178,12 +169,11 @@ with st.expander("Daily Checklist"):
         logs.append(checklist_entry)
         save_logs()
         st.success("Checklist saved!")
-    st.markdown("</div>", unsafe_allow_html=True)
 
 # --- Trends ---
 with st.expander("Trends"):
-    st.markdown("<div class='section-header'>Trends</div>", unsafe_allow_html=True)
-    st.markdown(f"<div class='section-content' style='background-color:{EXPANDER_COLORS['Trends']}'>", unsafe_allow_html=True)
+    st.markdown(f"<div style='height:8px; background-color:{ACCENT_COLORS['Trends']}; border-radius:4px;'></div>", unsafe_allow_html=True)
+    st.subheader("Trends")
     if logs:
         df = pd.DataFrame(logs)
         trend_cols = ["heart_rate","hydration","severity"]
@@ -196,15 +186,13 @@ with st.expander("Trends"):
         st.line_chart(df_chart)
     else:
         st.info("No data to show trends yet.")
-    st.markdown("</div>", unsafe_allow_html=True)
 
 # --- Notes ---
 with st.expander("Notes"):
-    st.markdown("<div class='section-header'>Notes</div>", unsafe_allow_html=True)
-    st.markdown(f"<div class='section-content' style='background-color:{EXPANDER_COLORS['Notes']}'>", unsafe_allow_html=True)
+    st.markdown(f"<div style='height:8px; background-color:{ACCENT_COLORS['Notes']}; border-radius:4px;'></div>", unsafe_allow_html=True)
+    st.subheader("Notes")
     note_text = st.text_area("Add a note")
     uploaded_file = st.file_uploader("Attach photo (optional)", type=["png","jpg","jpeg"])
-
     if st.button("Save Note", key="note_btn"):
         note_entry = {"timestamp": datetime.now().strftime("%Y-%m-%d %H:%M"), "note": note_text}
         if uploaded_file:
@@ -215,15 +203,13 @@ with st.expander("Notes"):
         logs.append(note_entry)
         save_logs()
         st.success("Note saved!")
-    st.markdown("</div>", unsafe_allow_html=True)
 
 # --- Doctor Export ---
 with st.expander("Doctor Export"):
-    st.markdown("<div class='section-header'>Doctor Export</div>", unsafe_allow_html=True)
-    st.markdown(f"<div class='section-content' style='background-color:{EXPANDER_COLORS['Doctor Export']}'>", unsafe_allow_html=True)
+    st.markdown(f"<div style='height:8px; background-color:{ACCENT_COLORS['Doctor Export']}; border-radius:4px;'></div>", unsafe_allow_html=True)
+    st.subheader("Doctor Export")
     start_date = st.date_input("Start Date")
     end_date = st.date_input("End Date")
-
     if st.button("Generate PDF", key="pdf_btn"):
         filtered_logs = [log for log in logs if 'timestamp' in log and start_date <= pd.to_datetime(log['timestamp']).date() <= end_date]
         if filtered_logs:
@@ -239,5 +225,4 @@ with st.expander("Doctor Export"):
             st.download_button("Download PDF", data=pdf_file, file_name="Tilt_export.pdf")
         else:
             st.info("No logs in selected date range.")
-    st.markdown("</div>", unsafe_allow_html=True)
 
