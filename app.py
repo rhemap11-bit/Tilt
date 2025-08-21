@@ -49,9 +49,41 @@ with st.expander("Quick Log", expanded=True):
     blood_pressure = st.text_input("Blood Pressure (optional)")
     hydration = st.number_input("Hydration (ml)", min_value=0, max_value=5000, value=250)
     salt_intake = st.number_input("Salt Intake (g)", min_value=0, max_value=50, value=1)
-    symptoms = st.text_area("Symptoms")
     severity = st.slider("Severity (1-10)", 1, 10, 5)
-    triggers = st.multiselect("Possible Triggers", ["Standing too long", "Heat", "Stress", "Exercise", "Other"])
+
+    # --- Symptoms with clickable pastel buttons ---
+    st.subheader("Select Symptoms")
+    common_symptoms = [
+        "Dizziness", "Heart Palpitations", "Fatigue", "Nausea",
+        "Brain Fog", "Headache", "Sweating", "Tremors"
+    ]
+    selected_symptoms = []
+
+    # Apply pastel button style
+    st.markdown("""
+    <style>
+    div.stCheckbox > label {
+        background-color: #ffd6e0;  /* pastel pink */
+        border-radius: 12px;
+        padding: 5px 10px;
+        margin: 3px;
+        display: inline-block;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    cols = st.columns(4)
+    for i, symptom in enumerate(common_symptoms):
+        with cols[i % 4]:
+            if st.checkbox(symptom):
+                selected_symptoms.append(symptom)
+
+    # Optionally add "Other" symptoms
+    other_symptoms = st.text_input("Other Symptoms (optional)")
+    if other_symptoms:
+        selected_symptoms.append(other_symptoms)
+
+    # What helped
     what_helped = st.text_area("What Helped?")
 
     if st.button("Add Log", key="log_btn"):
@@ -62,9 +94,8 @@ with st.expander("Quick Log", expanded=True):
             "blood_pressure": blood_pressure,
             "hydration": hydration,
             "salt_intake": salt_intake,
-            "symptoms": symptoms,
             "severity": severity,
-            "triggers": triggers,
+            "symptoms": selected_symptoms,
             "what_helped": what_helped
         }
         logs.append(new_entry)
@@ -72,25 +103,6 @@ with st.expander("Quick Log", expanded=True):
             json.dump(logs, f, indent=2)
         st.success("Log added!")
 
-# --- Daily Checklist ---
-with st.expander("Daily Checklist"):
-    meds = st.checkbox("Medications taken")
-    water_goal = st.checkbox("Water goal met")
-    compression_wear = st.checkbox("Compression wear")
-    exercise_tolerance = st.checkbox("Exercise tolerance")
-    
-    if st.button("Save Daily Checklist", key="checklist_btn"):
-        checklist_entry = {
-            "timestamp": datetime.now().strftime("%Y-%m-%d"),
-            "meds": meds,
-            "water_goal": water_goal,
-            "compression_wear": compression_wear,
-            "exercise_tolerance": exercise_tolerance
-        }
-        logs.append(checklist_entry)
-        with open(LOG_FILE, "w") as f:
-            json.dump(logs, f, indent=2)
-        st.success("Checklist saved!")
 
 # --- Trends ---
 with st.expander("Trends"):
