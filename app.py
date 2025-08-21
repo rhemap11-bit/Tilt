@@ -13,13 +13,27 @@ LOG_FILE = Path("logs.json")
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
+# --- Palette & Font ---
+PASTEL_BG = "#f9f5ff"
+FUN_FONT = "Comic Sans MS, cursive, sans-serif"
+
+EXPANDER_COLORS = {
+    "Quick Log": "#fff3b0",       # yellow
+    "Daily Checklist": "#d4ffea", # green
+    "Trends": "#d4eaff",          # blue
+    "Notes": "#ffd6e0",           # pink
+    "Doctor Export": "#e5d4ff"    # purple
+}
+
+SYMPTOM_COLORS = ["#ffd6e0", "#e5d4ff", "#d4eaff", "#fff3b0", "#d4ffea", "#ffd6e0", "#e5d4ff", "#d4eaff"]
+
 # --- Sidebar Accessibility ---
 st.sidebar.header("Accessibility Settings")
 large_text = st.sidebar.checkbox("Large Text Mode")
 high_contrast = st.sidebar.checkbox("High Contrast Mode")
 
-font_size = "20px" if large_text else "14px"
-bg_color = "#000000" if high_contrast else "#fffaf0"
+font_size = "22px" if large_text else "16px"
+bg_color = "#000000" if high_contrast else PASTEL_BG
 text_color = "#ffffff" if high_contrast else "#000000"
 
 st.markdown(f"""
@@ -27,18 +41,25 @@ st.markdown(f"""
     body {{
         background-color: {bg_color};
         color: {text_color};
+        font-family: {FUN_FONT};
         font-size: {font_size};
     }}
+    h1, h2, h3 {{
+        font-family: {FUN_FONT};
+    }}
     div.stButton > button {{
-        border-radius: 12px;
-        padding: 8px 16px;
-        margin: 3px;
+        border-radius: 20px;
+        padding: 10px 20px;
+        margin: 5px;
+        font-size: {font_size};
+        color: #000000;
     }}
     div.stCheckbox > label {{
-        border-radius: 12px;
-        padding: 5px 10px;
-        margin: 3px;
+        border-radius: 15px;
+        padding: 8px 12px;
+        margin: 4px;
         background-color: #ffd6e0;
+        color: #000000;
     }}
     textarea, input, select {{
         font-size: {font_size};
@@ -59,6 +80,7 @@ st.markdown(f"<h1 style='text-align:center; color:#e5d4ff'>Tilt: POTS Tracker</h
 
 # --- Quick Log ---
 with st.expander("Quick Log", expanded=True):
+    st.markdown(f"<div style='background-color:{EXPANDER_COLORS['Quick Log']}; border-radius:15px; padding:15px;'>", unsafe_allow_html=True)
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
     posture = st.selectbox("Posture", ["Sitting", "Standing", "Lying"])
     heart_rate = st.number_input("Heart Rate", min_value=40, max_value=200, value=70)
@@ -67,23 +89,19 @@ with st.expander("Quick Log", expanded=True):
     salt_intake = st.number_input("Salt Intake (g)", min_value=0, max_value=50, value=1)
     severity = st.slider("Severity (1-10)", 1, 10, 5)
 
-    # --- Symptoms Buttons ---
+    # Symptoms
     st.subheader("Select Symptoms")
-    common_symptoms = [
-        "Dizziness", "Heart Palpitations", "Fatigue", "Nausea",
-        "Brain Fog", "Headache", "Sweating", "Tremors"
-    ]
-    colors = ["#ffd6e0", "#e5d4ff", "#d4eaff", "#fff3b0",
-              "#ffd6e0", "#e5d4ff", "#d4eaff", "#fff3b0"]
+    common_symptoms = ["Dizziness", "Heart Palpitations", "Fatigue", "Nausea",
+                       "Brain Fog", "Headache", "Sweating", "Tremors"]
 
     if "selected_symptoms" not in st.session_state:
         st.session_state.selected_symptoms = []
 
     cols = st.columns(4)
     for i, symptom in enumerate(common_symptoms):
-        color = colors[i % len(colors)]
+        color = SYMPTOM_COLORS[i % len(SYMPTOM_COLORS)]
         selected = symptom in st.session_state.selected_symptoms
-
+        style = f"background-color:{color}; border:{'3px solid #000' if selected else '1px solid #000'}; border-radius:15px; padding:10px 15px; margin:5px;"
         if cols[i % 4].button(symptom, key=f"symptom_{i}", help="Click to toggle symptom"):
             if selected:
                 st.session_state.selected_symptoms.remove(symptom)
@@ -116,9 +134,11 @@ with st.expander("Quick Log", expanded=True):
             json.dump(logs, f, indent=2)
         st.success("Log added!")
         st.session_state.selected_symptoms.clear()
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # --- Daily Checklist ---
 with st.expander("Daily Checklist"):
+    st.markdown(f"<div style='background-color:{EXPANDER_COLORS['Daily Checklist']}; border-radius:15px; padding:15px;'>", unsafe_allow_html=True)
     meds = st.checkbox("Medications taken")
     water_goal = st.checkbox("Water goal met")
     compression_wear = st.checkbox("Compression wear")
@@ -136,9 +156,11 @@ with st.expander("Daily Checklist"):
         with open(LOG_FILE, "w") as f:
             json.dump(logs, f, indent=2)
         st.success("Checklist saved!")
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # --- Trends ---
 with st.expander("Trends"):
+    st.markdown(f"<div style='background-color:{EXPANDER_COLORS['Trends']}; border-radius:15px; padding:15px;'>", unsafe_allow_html=True)
     if logs:
         df = pd.DataFrame(logs)
         trend_cols = ["heart_rate", "hydration", "severity"]
@@ -151,9 +173,11 @@ with st.expander("Trends"):
         st.line_chart(df_chart)
     else:
         st.info("No data to show trends yet.")
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # --- Notes ---
 with st.expander("Notes"):
+    st.markdown(f"<div style='background-color:{EXPANDER_COLORS['Notes']}; border-radius:15px; padding:15px;'>", unsafe_allow_html=True)
     note_text = st.text_area("Add a note")
     uploaded_file = st.file_uploader("Attach photo (optional)", type=["png", "jpg", "jpeg"])
 
@@ -168,9 +192,11 @@ with st.expander("Notes"):
         with open(LOG_FILE, "w") as f:
             json.dump(logs, f, indent=2)
         st.success("Note saved!")
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # --- Doctor Export ---
 with st.expander("Doctor Export"):
+    st.markdown(f"<div style='background-color:{EXPANDER_COLORS['Doctor Export']}; border-radius:15px; padding:15px;'>", unsafe_allow_html=True)
     start_date = st.date_input("Start Date")
     end_date = st.date_input("End Date")
 
@@ -189,3 +215,4 @@ with st.expander("Doctor Export"):
             st.download_button("Download PDF", data=pdf_file, file_name="Tilt_export.pdf")
         else:
             st.info("No logs in selected date range.")
+    st.markdown("</div>", unsafe_allow_html=True)
