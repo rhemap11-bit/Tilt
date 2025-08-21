@@ -1,5 +1,7 @@
 import streamlit as st
 from datetime import datetime
+from streamlit_pills import pills
+
 
 # --- Data ---
 SYMPTOMS = ["Dizziness","Heart Palpitations","Fatigue","Nausea",
