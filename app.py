@@ -1,4 +1,14 @@
 import streamlit as st
+
+# Set page config (title, layout)
+st.set_page_config(page_title="Tilt", layout="centered")
+
+# Change the primary color to pastel purple (used for slider and selected items)
+st.set_option("theme.primaryColor", "#E8E1F8")  # pastel purple
+
+# Optional: set background color
+st.markdown("<style>body {background-color: #FFFFFF;}</style>", unsafe_allow_html=True)
+
 from datetime import datetime
 
 # --- Data ---
