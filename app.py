@@ -60,7 +60,6 @@ body, h1, h2, h3, label, div {{
     border-radius:20px;
     padding:8px 16px;
     margin:4px;
-    cursor:pointer;
     font-weight:500;
 }}
 .section-box {{
@@ -97,44 +96,43 @@ with st.expander("Quick Log", expanded=True):
     blood_pressure = st.text_input("Blood Pressure (optional)")
     severity = st.slider("Severity (1-10)", 1, 10, 5)
 
-    # --- Symptoms as multi-select pills ---
+    # --- Symptoms as checkbox-pills ---
     st.subheader("Symptoms")
     if "selected_symptoms" not in st.session_state:
         st.session_state.selected_symptoms = []
 
-    cols = st.columns(4)
+    sym_cols = st.columns(4)
     for i, symptom in enumerate(SYMPTOMS):
+        col = sym_cols[i % 4]
         selected = symptom in st.session_state.selected_symptoms
-        color = SYMPTOM_COLORS[i % len(SYMPTOM_COLORS)] if selected else "#F0F0F0"
-        pill_html = f"<span class='pill' style='background-color:{color}'>{symptom}</span>"
-        if cols[i % 4].button(symptom, key=f"symptom_{i}"):
-            if selected:
-                st.session_state.selected_symptoms.remove(symptom)
-            else:
-                st.session_state.selected_symptoms.append(symptom)
-        # Render pill in color
-        st.markdown(pill_html, unsafe_allow_html=True)
+        checked = col.checkbox("", value=selected, key=f"symptom_cb_{i}")
+        if checked and symptom not in st.session_state.selected_symptoms:
+            st.session_state.selected_symptoms.append(symptom)
+        elif not checked and symptom in st.session_state.selected_symptoms:
+            st.session_state.selected_symptoms.remove(symptom)
+        color = SYMPTOM_COLORS[i % len(SYMPTOM_COLORS)] if symptom in st.session_state.selected_symptoms else "#F0F0F0"
+        col.markdown(f"<span class='pill' style='background-color:{color}'>{symptom}</span>", unsafe_allow_html=True)
 
     other_symptoms = st.text_input("Other Symptoms (optional)")
     if other_symptoms and other_symptoms not in st.session_state.selected_symptoms:
         st.session_state.selected_symptoms.append(other_symptoms)
 
-    # --- Triggers as multi-select pills ---
+    # --- Triggers as checkbox-pills ---
     st.subheader("Possible Triggers")
     if "selected_triggers" not in st.session_state:
         st.session_state.selected_triggers = []
 
-    cols = st.columns(3)
+    trig_cols = st.columns(3)
     for i, trigger in enumerate(TRIGGERS):
+        col = trig_cols[i % 3]
         selected = trigger in st.session_state.selected_triggers
-        color = ACCENT_COLORS['Triggers'] if selected else "#F0F0F0"
-        pill_html = f"<span class='pill' style='background-color:{color}'>{trigger}</span>"
-        if cols[i % 3].button(trigger, key=f"trigger_{i}"):
-            if selected:
-                st.session_state.selected_triggers.remove(trigger)
-            else:
-                st.session_state.selected_triggers.append(trigger)
-        st.markdown(pill_html, unsafe_allow_html=True)
+        checked = col.checkbox("", value=selected, key=f"trigger_cb_{i}")
+        if checked and trigger not in st.session_state.selected_triggers:
+            st.session_state.selected_triggers.append(trigger)
+        elif not checked and trigger in st.session_state.selected_triggers:
+            st.session_state.selected_triggers.remove(trigger)
+        color = ACCENT_COLORS['Triggers'] if trigger in st.session_state.selected_triggers else "#F0F0F0"
+        col.markdown(f"<span class='pill' style='background-color:{color}'>{trigger}</span>", unsafe_allow_html=True)
 
     what_helped = st.text_area("What Helped?")
 
@@ -225,12 +223,5 @@ if st.button("Add Quick Log Entry", key="final_log_btn"):
         "heart_rate": heart_rate,
         "blood_pressure": blood_pressure,
         "severity": severity,
-        "symptoms": st.session_state.selected_symptoms.copy(),
-        "triggers": st.session_state.selected_triggers.copy(),
-        "what_helped": what_helped
-    }
-    logs.append(new_entry)
-    save_logs()
-    st.success("Quick Log added!")
-    st.session_state.selected_symptoms.clear()
-    st.session_state.selected_triggers.clear()
+        "symptoms": st.session_state.select_
+
