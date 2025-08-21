@@ -22,10 +22,10 @@ ACCENT_COLORS = {
     "Trends": "#D4EAFF",
     "Notes": "#FFF3B0",
     "Doctor Export": "#E5D4FF",
-    "Symptoms": "#FFD6E0",
-    "Triggers": "#E5D4FF"
+    "Symptoms": "#FFB3C6",
+    "Triggers": "#B0E0FF"
 }
-SYMPTOM_COLORS = ["#FFD6E0","#E5D4FF","#D4EAFF","#FFF3B0","#D4FFEA","#FFD6E0","#E5D4FF","#D4EAFF"]
+SYMPTOM_COLORS = ["#FFD6E0","#E5D4FF","#D4EAFF","#FFF3B0","#D4FFEA","#FFB3C6","#B0E0FF","#FFD6A5"]
 
 SYMPTOMS = ["Dizziness","Heart Palpitations","Fatigue","Nausea",
             "Brain Fog","Headache","Sweating","Tremors"]
@@ -36,7 +36,7 @@ st.sidebar.header("Accessibility Settings")
 large_text = st.sidebar.checkbox("Large Text Mode")
 high_contrast = st.sidebar.checkbox("High Contrast Mode")
 font_size = "20px" if large_text else "16px"
-bg_color = "#000000" if high_contrast else "#F9F5FF"
+bg_color = "#000000" if high_contrast else "#FFF8F0"
 text_color = "#ffffff" if high_contrast else "#000000"
 
 # --- Global Styles ---
@@ -47,6 +47,7 @@ body, h1, h2, h3, label, div {{
     font-family: {BODY_FONT};
     font-size: {font_size};
     color: {text_color};
+    background-color: {bg_color};
 }}
 .section-header {{
     font-family: {HEADER_FONT};
@@ -61,6 +62,11 @@ body, h1, h2, h3, label, div {{
     margin:4px;
     cursor:pointer;
     font-weight:500;
+}}
+.section-box {{
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
 }}
 </style>
 """, unsafe_allow_html=True)
@@ -82,7 +88,7 @@ def save_logs():
 
 # --- Quick Log ---
 with st.expander("Quick Log", expanded=True):
-    st.markdown(f"<div style='height:8px; background-color:{ACCENT_COLORS['Quick Log']}; border-radius:4px;'></div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='section-box' style='background-color:{ACCENT_COLORS['Quick Log']};'></div>", unsafe_allow_html=True)
     st.subheader("Quick Log")
     
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -100,13 +106,14 @@ with st.expander("Quick Log", expanded=True):
     for i, symptom in enumerate(SYMPTOMS):
         selected = symptom in st.session_state.selected_symptoms
         color = SYMPTOM_COLORS[i % len(SYMPTOM_COLORS)] if selected else "#F0F0F0"
+        pill_html = f"<span class='pill' style='background-color:{color}'>{symptom}</span>"
         if cols[i % 4].button(symptom, key=f"symptom_{i}"):
             if selected:
                 st.session_state.selected_symptoms.remove(symptom)
             else:
                 st.session_state.selected_symptoms.append(symptom)
-        if selected:
-            st.markdown(f"<span class='pill' style='background-color:{SYMPTOM_COLORS[i % len(SYMPTOM_COLORS)]}'>{symptom}</span>", unsafe_allow_html=True)
+        # Render pill in color
+        st.markdown(pill_html, unsafe_allow_html=True)
 
     other_symptoms = st.text_input("Other Symptoms (optional)")
     if other_symptoms and other_symptoms not in st.session_state.selected_symptoms:
@@ -120,20 +127,20 @@ with st.expander("Quick Log", expanded=True):
     cols = st.columns(3)
     for i, trigger in enumerate(TRIGGERS):
         selected = trigger in st.session_state.selected_triggers
-        color = "#FFD6E0" if not selected else "#FFB3C6"
+        color = ACCENT_COLORS['Triggers'] if selected else "#F0F0F0"
+        pill_html = f"<span class='pill' style='background-color:{color}'>{trigger}</span>"
         if cols[i % 3].button(trigger, key=f"trigger_{i}"):
             if selected:
                 st.session_state.selected_triggers.remove(trigger)
             else:
                 st.session_state.selected_triggers.append(trigger)
-        if selected:
-            st.markdown(f"<span class='pill' style='background-color:#FFB3C6'>{trigger}</span>", unsafe_allow_html=True)
+        st.markdown(pill_html, unsafe_allow_html=True)
 
     what_helped = st.text_area("What Helped?")
 
 # --- Daily Checklist ---
 with st.expander("Daily Checklist"):
-    st.markdown(f"<div style='height:8px; background-color:{ACCENT_COLORS['Daily Checklist']}; border-radius:4px;'></div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='section-box' style='background-color:{ACCENT_COLORS['Daily Checklist']};'></div>", unsafe_allow_html=True)
     st.subheader("Daily Checklist")
     meds = st.checkbox("Medications taken")
     hydration = st.number_input("Hydration (ml)", 0, 5000, 250)
@@ -156,7 +163,7 @@ with st.expander("Daily Checklist"):
 
 # --- Trends ---
 with st.expander("Trends"):
-    st.markdown(f"<div style='height:8px; background-color:{ACCENT_COLORS['Trends']}; border-radius:4px;'></div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='section-box' style='background-color:{ACCENT_COLORS['Trends']};'></div>", unsafe_allow_html=True)
     st.subheader("Trends")
     if logs:
         df = pd.DataFrame(logs)
@@ -173,7 +180,7 @@ with st.expander("Trends"):
 
 # --- Notes ---
 with st.expander("Notes"):
-    st.markdown(f"<div style='height:8px; background-color:{ACCENT_COLORS['Notes']}; border-radius:4px;'></div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='section-box' style='background-color:{ACCENT_COLORS['Notes']};'></div>", unsafe_allow_html=True)
     st.subheader("Notes")
     note_text = st.text_area("Add a note")
     uploaded_file = st.file_uploader("Attach photo (optional)", type=["png","jpg","jpeg"])
@@ -190,7 +197,7 @@ with st.expander("Notes"):
 
 # --- Doctor Export ---
 with st.expander("Doctor Export"):
-    st.markdown(f"<div style='height:8px; background-color:{ACCENT_COLORS['Doctor Export']}; border-radius:4px;'></div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='section-box' style='background-color:{ACCENT_COLORS['Doctor Export']};'></div>", unsafe_allow_html=True)
     st.subheader("Doctor Export")
     start_date = st.date_input("Start Date")
     end_date = st.date_input("End Date")
@@ -210,7 +217,7 @@ with st.expander("Doctor Export"):
         else:
             st.info("No logs in selected date range.")
 
-# --- Add Log Button at the end to save Quick Log ---
+# --- Final Quick Log Save ---
 if st.button("Add Quick Log Entry", key="final_log_btn"):
     new_entry = {
         "timestamp": timestamp,
